@@ -1,16 +1,20 @@
 use std::env;
-use std::fs;
+use std::process;
+
+use sgrep::Config;
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    // let args: Vec<String> = env::args().collect();
+    // let config = parse_config(&args);
+    let config = Config::build(env::args()).unwrap_or_else(|err| {
+        eprintln!("Problem parsing arguments: {err}");
+        process::exit(1);
+    });
 
-    let query = &args[1];
-    let file_path = &args[2];
-
-    println!("Searching for {}", query);
-    println!("In file {}", file_path);
-
-    let contents = fs::read_to_string(file_path).expect("Should have been able to read the file");
-
-    println!("Text:\n{contents}");
+    println!("Searching for {}", config.query);
+    println!("In file {}", config.file_path);
+    sgrep::run(config).unwrap_or_else(|err| {
+        eprintln!("Application error: {err}");
+        process::exit(1);
+    });
 }
